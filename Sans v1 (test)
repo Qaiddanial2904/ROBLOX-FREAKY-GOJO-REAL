@@ -1,0 +1,434 @@
+-- Function to set move name on the hotbar
+local function setMoveName(moveNumber, moveName)
+    local player = game.Players.LocalPlayer
+    local playerGui = player.PlayerGui
+    local hotbar = playerGui:FindFirstChild("Hotbar")
+    local backpack = hotbar:FindFirstChild("Backpack")
+    local hotbarFrame = backpack:FindFirstChild("Hotbar")
+    local baseButton = hotbarFrame:FindFirstChild(tostring(moveNumber)).Base
+    local toolName = baseButton.ToolName
+    toolName.Text = moveName
+end
+
+-- Set all moves' names
+setMoveName(1, "Telekenis pull")
+setMoveName(2, "Effortlest Eject")
+setMoveName(3, "Bone Cage")
+setMoveName(4, "Bone Breaker")
+
+-- Function to play animations sequentially
+local function playSequentialAnimations(moveId, animationId1, animationId2, speed, stopAfter)
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+
+    humanoid.AnimationPlayed:Connect(function(animationTrack)
+        if animationTrack.Animation.AnimationId == "rbxassetid://" .. moveId then
+            -- Stop all current animations
+            for _, animTrack in pairs(humanoid:GetPlayingAnimationTracks()) do
+                animTrack:Stop()
+            end
+
+            -- First animation
+            local anim1 = Instance.new("Animation")
+            anim1.AnimationId = "rbxassetid://" .. animationId1
+            local loadedAnim1 = humanoid:LoadAnimation(anim1)
+            loadedAnim1:Play()
+            loadedAnim1:AdjustSpeed(speed)
+
+            -- After the first animation finishes, play the second one
+            loadedAnim1.Stopped:Connect(function()
+                if animationId2 ~= "0" then
+                    -- Second animation
+                    local anim2 = Instance.new("Animation")
+                    anim2.AnimationId = "rbxassetid://" .. animationId2
+                    local loadedAnim2 = humanoid:LoadAnimation(anim2)
+                    loadedAnim2:Play()
+                    loadedAnim2:AdjustSpeed(speed)
+
+                    -- Optionally stop the second animation after a certain time
+                    if stopAfter then
+                        delay(stopAfter, function()
+                            loadedAnim2:Stop()
+                        end)
+                    end
+                end
+            end)
+
+            -- Optionally stop the first animation after a certain time (if needed)
+            if stopAfter then
+                delay(stopAfter, function()
+                    loadedAnim1:Stop()
+                end)
+            end
+        end
+    end)
+end
+
+-- Updated animations with secondary animation set to "0" when there's no second animation
+
+playSequentialAnimations(16139108718, 17450393107, "0", 0.7)    -- Move 1
+playSequentialAnimations(16139708727, 14967219354, "0", 0.8)    -- Move 1.5
+playSequentialAnimations(16515850153, 16062712948 , "17450393107", 1.5,0.4)      -- Move 2
+playSequentialAnimations(16431491215, 18897119503, "0", 1.4)    -- Move 3
+playSequentialAnimations(0, 17860467628, "0", 1)                -- Move 4
+playSequentialAnimations(16597912086, 12509505723, "0", 0.8)    -- Move 4.5
+playSequentialAnimations(16737255386 ,  14406991505, "0", 0.8)    -- Ultimate move 1
+playSequentialAnimations(17464644182 , 15089788940, "0", 1,3)      -- Ultimate move 2
+playSequentialAnimations(13083332742, 16734584478, "0", 1)      -- Ultimate move 3
+playSequentialAnimations(13146710762, 18897118507, "0", 1)      -- Ultimate move 4
+
+-- Additional moves with secondary animation set to "0"
+playSequentialAnimations(10479335397, 13630786846, "0", 1.3, 1.2)  -- Dash
+playSequentialAnimations(10503381238, 14900168720, "0", 4, nil)    -- Uppercut
+playSequentialAnimations(10470104242, 16571909908 , "0", 2, 0.6)    -- Downslam
+
+-- Set ultimate name
+local function setUltimateName(ultimateName)
+    local player = game.Players.LocalPlayer
+    local playerGui = player:WaitForChild("PlayerGui")
+    local screenGui = playerGui:FindFirstChild("ScreenGui")
+    
+    if screenGui then
+        local magicHealthFrame = screenGui:FindFirstChild("MagicHealth")
+        if magicHealthFrame then
+            local textLabel = magicHealthFrame:FindFirstChild("TextLabel")
+            if textLabel then
+                textLabel.Text = ultimateName
+            end
+        end
+    end
+end
+
+-- Set ultimate name
+setUltimateName("BAD TIME")
+
+-- Example of using the function for ultimate activation with a second animation
+playSequentialAnimations(16734584478, 17466449380, 13929182266, 1.8)  -- Play ult activation then move 4
+
+-- Execute external script
+loadstring(game:HttpGet("https://pastebin.com/raw/HiZZsCRY"))()
+
+local tool = Instance.new("Tool")
+tool.Name = "Lazy Bone" -- Name of your tool
+
+local handle = Instance.new("Part")
+handle.Name = "Handle"
+handle.Transparency = 1
+handle.CanCollide = false
+handle.Parent = tool
+
+local soundId = "rbxassetid://3722190685" -- Sound ID (must be a valid sound ID)
+local sound = Instance.new("Sound")
+sound.SoundId = soundId
+sound.Parent = tool
+
+local animationId1 = "rbxassetid://15443682006" -- First animation ID (must be a valid animation ID)
+local animationId2 = "rbxassetid://15443688094" -- Second animation ID
+
+-- Function to play sound and animations sequentially when tool is equipped
+local function onEquipped()
+    local player = game.Players.LocalPlayer
+    local character = player.Character
+    if character then
+        local humanoid = character:WaitForChild("Humanoid")
+        
+        -- Play the sound
+        sound:Play()
+
+        -- Play the first animation
+        local animation1 = Instance.new("Animation")
+        animation1.AnimationId = animationId1
+        local animationTrack1 = humanoid:LoadAnimation(animation1)
+        animationTrack1:Play()
+
+        -- After the first animation finishes, play the second animation
+        animationTrack1.Stopped:Connect(function()
+            local animation2 = Instance.new("Animation")
+            animation2.AnimationId = animationId2
+            local animationTrack2 = humanoid:LoadAnimation(animation2)
+            animationTrack2:Play()
+        end)
+    end
+end
+
+tool.Equipped:Connect(onEquipped)
+
+tool.Parent = game.Players.LocalPlayer.Backpack
+
+-- Solid white color sequence
+local solidWhite = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)), -- solid white
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))  -- solid white
+}
+
+-- Create effect on Right Arm
+local fx1 = game.ReplicatedStorage.Resources.FiveSeasonsFX["CharFX"].ArmBurst.Attachment:Clone()
+fx1.Parent = game.Players.LocalPlayer.Character["Right Arm"]
+for _, child in ipairs(fx1:GetChildren()) do
+    if child:IsA("ParticleEmitter") then
+        child.Color = solidWhite -- Change particle color to solid white
+        child:Emit(20) -- Emit 20 particles
+    end
+end
+
+local fx2 = game.ReplicatedStorage.Resources.FiveSeasonsFX["CharFX"].ArmBurst.a:Clone()
+fx2.Parent = game.Players.LocalPlayer.Character["Right Arm"]
+for _, child in ipairs(fx2:GetChildren()) do
+    if child:IsA("ParticleEmitter") then
+        child.Color = solidWhite -- Change particle color to solid white
+        child:Emit(20) -- Emit 20 particles
+    end
+end
+
+local fx3 = game.ReplicatedStorage.Resources.FiveSeasonsFX["CharFX"].ArmFX:Clone()
+fx3.Parent = game.Players.LocalPlayer.Character["Right Arm"]
+for _, child in ipairs(fx3:GetChildren()) do
+    if child:IsA("ParticleEmitter") then
+        child.Color = solidWhite -- Change particle color to solid white
+        child:Emit(2) -- Emit 2 particles
+    end
+end
+
+local fx4 = game.ReplicatedStorage.Resources.FiveSeasonsFX["CharFX"].EyeEmit:Clone()
+fx4.Parent = game.Players.LocalPlayer.Character["Head"]
+for _, child in ipairs(fx4:GetChildren()) do
+    if child:IsA("ParticleEmitter") then
+        child.Color = solidWhite -- Change particle color to solid white
+        child:Emit(20) -- Emit 20 particles
+    end
+end
+
+-- Create effect on Left Arm
+local fx5 = game.ReplicatedStorage.Resources.FiveSeasonsFX["CharFX"].ArmBurst.Attachment:Clone()
+fx5.Parent = game.Players.LocalPlayer.Character["Left Arm"]
+for _, child in ipairs(fx5:GetChildren()) do
+    if child:IsA("ParticleEmitter") then
+        child.Color = solidWhite -- Change particle color to solid white
+        child:Emit(30) -- Emit 20 particles
+    end
+end
+
+local fx6 = game.ReplicatedStorage.Resources.FiveSeasonsFX["CharFX"].ArmBurst.a:Clone()
+fx6.Parent = game.Players.LocalPlayer.Character["Left Arm"]
+for _, child in ipairs(fx6:GetChildren()) do
+    if child:IsA("ParticleEmitter") then
+        child.Color = solidWhite -- Change particle color to solid white
+        child:Emit(20) -- Emit 20 particles
+    end
+end
+
+local fx7 = game.ReplicatedStorage.Resources.FiveSeasonsFX["CharFX"].ArmFX:Clone()
+fx7.Parent = game.Players.LocalPlayer.Character["Left Arm"]
+for _, child in ipairs(fx7:GetChildren()) do
+    if child:IsA("ParticleEmitter") then
+        child.Color = solidWhite -- Change particle color to solid white
+        child:Emit(2) -- Emit 2 particles
+    end
+end
+
+local function activateEyeEffect(moveId, color)
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+
+    humanoid.AnimationPlayed:Connect(function(animationTrack)
+        if animationTrack.Animation.AnimationId == "rbxassetid://" .. moveId then
+            -- Eye effect (yellow or blue based on the color parameter)
+            local eyeEffect = game.ReplicatedStorage.Resources.FiveSeasonsFX["CharFX"].EyeEmit:Clone()
+            eyeEffect.Parent = character.Head
+
+            for _, child in ipairs(eyeEffect:GetChildren()) do
+                if child:IsA("ParticleEmitter") then
+                    -- Change the color (yellow or blue)
+                    child.Color = ColorSequence.new(color)  
+                    child:Emit(20)  -- Emit 20 particles
+                end
+            end
+
+            -- Remove the effect after 2 seconds
+            delay(3, function()
+                eyeEffect:Destroy()
+            end)
+        end
+    end)
+end
+
+-- Activate yellow eye effect (yellow color)
+activateEyeEffect(16431491215, Color3.fromRGB(255, 255, 0))  -- Yellow effect
+
+-- Activate blue eye effect (blue color)
+activateEyeEffect(16139108718, Color3.fromRGB(0, 0, 255))    -- Blue effect
+
+-- Function to trigger the special effects for Move 2
+local function triggerMove2Effects()
+    -- Create the white skull effect
+    local sfx = Instance.new("Part", workspace)
+    sfx.Transparency = 1
+    sfx.Anchored = true
+    sfx.Size = Vector3.new(4, 6, 6)
+    sfx.BrickColor = BrickColor.new("White") -- Make the skull white
+    local ms = Instance.new("SpecialMesh", sfx)
+    ms.Scale = Vector3.new(2.75, 2.75, 2.75)
+    ms.MeshId = "rbxassetid://4601920280"
+    sfx.CFrame = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart").CFrame * CFrame.new(0, 2.45, 3)
+    sfx.CanCollide = false
+
+    -- Fade in the white skull
+    for i = 1, 10 do
+        sfx.Transparency -= 0.1
+        sfx.CFrame = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart").CFrame * CFrame.new(math.pi * 0, 2.45, -5)
+        task.wait()
+    end
+
+    -- Create the blue cylinder effect (unchanged)
+    delay(0.35, function()
+        local sfo = Instance.new("Part", sfx)
+        sfo.Anchored = true
+        sfo.Shape = "Cylinder"
+        sfo.BrickColor = BrickColor.new("Cyan") -- Blue effect
+        sfo.CFrame = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart").CFrame * CFrame.new(math.pi * 0, -0.45, -39.5)
+        sfo.Material = Enum.Material.Neon
+        sfo.Transparency = 1
+        sfo.Size = Vector3.new(7.25, 7.25, 75)
+        local lolo = Instance.new("SpecialMesh", sfo)
+        lolo.MeshType = "Sphere"
+        task.wait(0.15)
+        for i = 1, 6 do
+            sfo.Transparency -= 0.1
+            sfx.CFrame = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart").CFrame * CFrame.new(math.pi * 0, 2.45, -5)
+            task.wait()
+        end
+        task.wait(0.5)
+        sfo:Destroy()
+    end)
+
+    -- Fade out the white skull model
+    delay(0.75, function()
+        for i = 1, 10 do
+            sfx.Transparency += 0.1
+            task.wait()
+        end
+        sfx:Destroy()
+    end)
+end
+
+-- Function to play animations and trigger SFX for Move 2
+local function playSequentialAnimations(moveId, animationId1, animationId2, speed, stopAfter)
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+
+    humanoid.AnimationPlayed:Connect(function(animationTrack)
+        if animationTrack.Animation.AnimationId == "rbxassetid://" .. moveId then
+            -- Stop all current animations
+            for _, animTrack in pairs(humanoid:GetPlayingAnimationTracks()) do
+                animTrack:Stop()
+            end
+
+            -- First animation
+            local anim1 = Instance.new("Animation")
+            anim1.AnimationId = "rbxassetid://" .. animationId1
+            local loadedAnim1 = humanoid:LoadAnimation(anim1)
+            loadedAnim1:Play()
+            loadedAnim1:AdjustSpeed(speed)
+
+            -- Check if this is Move 2 (ID: 16515850153) to trigger special SFX and blue cylinder effect
+            if moveId == 16515850153 then
+                triggerMove2Effects() -- Trigger Move 2 effects
+            end
+
+            -- After the first animation finishes, play the second one
+            loadedAnim1.Stopped:Connect(function()
+                if animationId2 ~= "0" then
+                    -- Second animation
+                    local anim2 = Instance.new("Animation")
+                    anim2.AnimationId = "rbxassetid://" .. animationId2
+                    local loadedAnim2 = humanoid:LoadAnimation(anim2)
+                    loadedAnim2:Play()
+                    loadedAnim2:AdjustSpeed(speed)
+
+                    -- Optionally stop the second animation after a certain time
+                    if stopAfter then
+                        delay(stopAfter, function()
+                            loadedAnim2:Stop()
+                        end)
+                    end
+                end
+            end)
+
+            -- Optionally stop the first animation after a certain time (if needed)
+            if stopAfter then
+                delay(stopAfter, function()
+                    loadedAnim1:Stop()
+                end)
+            end
+        end
+    end)
+end
+
+-- Play animations for Move 2 with effects
+playSequentialAnimations(16515850153, 16062712948, "17450393107", 1.5, 0.4)
+
+local function triggerMove2Effects()
+    -- Create the white skull effect
+    local sfx = Instance.new("Part", workspace)
+    sfx.Transparency = 1
+    sfx.Anchored = true
+    sfx.Size = Vector3.new(4, 6, 6)
+    sfx.BrickColor = BrickColor.new("White") -- Make the skull white
+    local ms = Instance.new("SpecialMesh", sfx)
+    ms.Scale = Vector3.new(2.75, 2.75, 2.75)
+    ms.MeshId = "rbxassetid://4601920280"
+    sfx.CFrame = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart").CFrame * CFrame.new(0, 2.45, 3)
+    sfx.CanCollide = false
+
+    -- Fade in the white skull (over 1 second)
+    for i = 1, 10 do
+        sfx.Transparency -= 0.1
+        sfx.CFrame = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart").CFrame * CFrame.new(0, 2.45, -5)
+        task.wait(0.1)  -- Each step takes 0.1 seconds
+    end
+
+    -- Create the blue cylinder effect
+    delay(0.35, function()
+        local sfo = Instance.new("Part", sfx)
+        sfo.Anchored = true
+        sfo.Shape = "Cylinder"
+        sfo.BrickColor = BrickColor.new("Cyan") -- Blue effect
+        sfo.CFrame = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart").CFrame * CFrame.new(0, -0.45, -39.5)
+        sfo.Material = Enum.Material.Neon
+        sfo.Transparency = 1
+        sfo.Size = Vector3.new(7.25, 7.25, 75)
+        local lolo = Instance.new("SpecialMesh", sfo)
+        lolo.MeshType = "Sphere"
+
+        task.wait(0.15)
+
+        -- Fade in the blue cylinder (over 0.6 seconds)
+        for i = 1, 6 do
+            sfo.Transparency -= 0.1
+            sfx.CFrame = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart").CFrame * CFrame.new(0, 2.45, -5)
+            task.wait(0.1)  -- Each step takes 0.1 seconds
+        end
+
+        task.wait(0.5)
+
+        -- Fade out the blue cylinder over 5 seconds
+        for i = 1, 50 do
+            sfo.Transparency += 0.02
+            task.wait(0.1)  -- 50 steps at 0.1 seconds per step equals 5 seconds
+        end
+
+        sfo:Destroy()
+    end)
+
+    -- Fade out the white skull over 5 seconds
+    delay(0.75, function()
+        for i = 1, 50 do
+            sfx.Transparency += 0.02
+            task.wait(0.1)  -- 50 steps at 0.1 seconds per step equals 5 seconds
+        end
+        sfx:Destroy()
+    end)
+end
